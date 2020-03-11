@@ -3,6 +3,7 @@
 #include <stdio.h> 
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 struct Node *appendNode(struct List *list, struct MdbRec *data){
 	struct Node *pointer = list -> head;
@@ -19,26 +20,36 @@ void findData(char *string, struct List *list){
 	struct Node *pointer = list -> head;
 	int counter = 1;
 	while (pointer != NULL){
-		//printf("%d \n", counter++);
 		struct MdbRec *data = pointer -> data;
+		//printf("%d%d ", strstr(data -> name, string) != NULL, strstr(data -> msg, string) != NULL);
+		//printf("%s %s %s \n", data->name, data->msg, string);
 		if (strstr(data -> name, string) ||strstr(data -> msg, string)){
-			printf("   %d: {%s} said {%s} \n", counter, data -> name, data -> msg);
+			if (counter < 10) printf("   ");
+			if (counter < 100 && counter >=10) printf("  ");
+			if (counter >= 100) printf(" ");
+			printf("%d: {%s} said {%s} \n", counter, data -> name, data -> msg);
 		}
 		counter++;
 		pointer = pointer -> next;
 	}
 }
 
-void freeData(){
-
+void freeData(struct List *list){
+	struct Node *pointer = list -> head;
+	while (pointer != NULL){
+        //struct Node *pointer = list -> head;
+		free(pointer -> data);
+		pointer = pointer -> next;
+	}
 }
 
 int main(int argc, char **argv)
 {
+	//Make sure a file name is provided and valid. Open file
 	if (argc != 2) {
-		fprintf(stderr, "%s\n", "usage: ncat <file_name>"); exit(1);
+		fprintf(stderr, "%s\n", "usage: ncat <file_name>"); 
+		exit(1);
 	}
-	
 	char *filename = argv[1];
     FILE *fp = fopen(filename, "r");
     if (fp == NULL) {
@@ -65,14 +76,25 @@ int main(int argc, char **argv)
 	//Take in user input and look for it
 	printf("lookup: ");
 	char input[1000];
-	while (scanf("%s", input) != EOF){
-		//printf("%s \n", input);
-		findData(input, &list);
-		printf("lookup: ");
+	while (fgets (input, 1000, stdin) != NULL){
+		char *proc = malloc(6);
+		strncpy(proc, input, 5);
+		for(int i=0; i<5; i++){
+			if(!isprint(proc[i])){
+				proc[i] = '\0';
+			}
+		}
+		findData(proc, &list);
+		free(proc);
+		printf("\nlookup: ");
 	}
 	
 	//Free everything
-	
+	freeData(list);
+	while ((popFront(&list)) != NULL) {
+        ;
+    }
+
 	//Close file and end
 	fclose(fp);
 	return 0;
