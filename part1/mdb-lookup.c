@@ -134,7 +134,13 @@ int main(int argc, char **argv)
 	while ((popFront(&list)) != NULL) {
         ;
     }
-
+	
+	//Check error
+	if (ferror(fp)) {
+        perror(filename);
+        exit(1);
+	}
+	
 	//Close file and end
 	fclose(fp);
 	return 0;
